@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use CGI qw(param);
+use DBI;
+
+my $add_dt=param("add_dt");
+my $add_tm=param("add_tm");
+my $add_txt=param("add_txt");
+my $sear=param("sear");
+my $type=param("type");
+
+my $dbh=DBI->connect("DBI:mysql:myDB","test","test");
+
+
+print <<HTML;
+Content-type: text/html
+<html>
+  <head>
+    <title>Archana Form</title>
+    <script type="text/javascript">
+      function onld()
+      {
+	origtbl();
+      }
+      function origtbl()
+      {
+	var disp_td=document.getElementById("disp");
+	disp_td.innerHTML="<input type='button' value='New' onclick='disptbl()'>";
+      }
+      function disptbl()
+      {
+	var disp_td=document.getElementById("disp");
+	var disp_str="<input type='submit' value='Add' onclick='addtbl()'>&nbsp;&nbsp;";
+	disp_str+="<input type='button' value='Cancel' onclick='origtbl()'>";
+	disp_str+="<table border=0 width='100%'>";
+	disp_str+="<tr><td>DATE<input type='date' name='add_dt'></td></tr><td>TIME<input type='time' name='add_tm'></td></tr>";
+	disp_str+="<td>DESC<input type='text' name='add_txt'></td></tr></table>";
+	disp_td.innerHTML=disp_str;
+      }
+      function addtbl()
+      {
+	var current = new Date();
+	var man_date = frm.add_dt.value+" "+frm.add_tm.value;
+	var mon	= (current.getMonth() >= 12) ? mon=1 : ((current.getMonth() < 10) ? mon='0'+(current.getMonth()+1) : mon=(current.getMonth()+1));
+	var curr_dt = ""+current.getFullYear()+"-"+mon+"-"+current.getDate()+" "+current.getHours()+":"+current.getMinutes();
+	if( curr_dt < man_date )
+	{
+	  var url="http://localhost/cgi-bin/appontment.cgi?add_dt="+frm.add_dt+"&add_tm="+frm.add_tm+"&add_txt="+frm.add_txt;
+	  document.frm.action=url;
+	  document.frm.submit();
+	}
+	else
+	{
+		alert('The Manual and Current both are identical (OR) the Manual date is past');
+	}
+      }
+      function datatbl()
+      {
+	var url="http://localhost/cgi-bin/appontment.cgi?sear="+frm.sear+"&type=search";
+	document.frm.action=url;
+	document.frm.submit();
+      }
+    </script>
+  </head>
+  <body onload="onld()">
+    <br><br><br><br><br>
+    <form name='frm' id='frm' method='get'>
+      <table border=1 align="center">
+	<tr><td align="center"><b>Appointments</b></td></tr>
+	<tr><td id ="disp"></td></tr>
+	<tr><td><input type="text">
+		<input type="submit" name="sear" value="Search" onclick="datatbl()"></td>
+	</tr>
+	<tr>
+	    <td>
+		<table>
+HTML
+	my $sth;
+	if($sear ne "" && $type eq "type")
+	{
+	  $sth=$dbh->prepare("select * from myDB where description ilike '%$sear%'");
+print <<HTML;
+	  <tr><th>Date</th><th>Time</th><th>Description</th></tr>
+HTML
+	}
+	elsif($type eq "type")
+	{
+	  $sth=$dbh->prepare("select * from myDB order by add_dt");
+print <<HTML;
+	  <tr><th>Date</th><th>Time</th><th>Description</th></tr>
+HTML
+	}
+	$sth->execute();
+	while(my @arr = $sth->fetchrow_array)
+	{
+print <<HTML;
+	  <tr><td>$arr[0]</td><td>$arr[1]</td><td>$arr[2]</td></tr>
+HTML
+	}
+        $sth->finish();
+	$dbh->disconnect();
+print <<HTML;
+		</table>
+	    </td>
+	</tr>
+      </table>
+    </form>
+  </body>
+</html>
+HTML
+
