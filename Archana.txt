@@ -31,13 +31,14 @@ print <<HTML;
       function disptbl()
       {
 	var disp_td=document.getElementById("disp");
-	var disp_str="<input type='submit' value='Add' onclick='addtbl()'>&nbsp;&nbsp;";
-	disp_str+="<input type='button' value='Cancel' onclick='origtbl()'>";
+	var disp_str = '';
 	disp_str+="<table border=0 width='100%'>";
 	disp_str+="<tr><td>DATE<input type='date' name='add_dt'></td></tr><td>TIME<input type='time' name='add_tm'></td></tr>";
 	disp_str+="<td>DESC<input type='text' name='add_txt'></td></tr></table>";
+	disp_str+="<input type='submit' value='Add' onclick='addtbl()'>&nbsp;&nbsp;";
+	disp_str+="<input type='button' value='Cancel' onclick='origtbl()'>";
 	disp_td.innerHTML=disp_str;
-      }
+    }
       function addtbl()
       {
 	var current = new Date();
