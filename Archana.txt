@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 use strict;
 use warnings;
 use CGI qw(param);
@@ -8,12 +7,14 @@ use DBI;
 my $add_dt=param("add_dt");
 my $add_tm=param("add_tm");
 my $add_txt=param("add_txt");
-my $sear=param("sear");
+my $sear=param("search");
 my $type=param("type");
 
-my $dbh=DBI->connect("DBI:mysql:myDB","test","test");
+my $dbfile = 'C:\sqlite\company.db';      
+my $dbh = DBI->connect("DBI:SQLite:dbname=$dbfile","","",{ RaiseError => 1 },) or die $DBI::errstr;
 
 print "Content-type: text/html\n\n";
+
 print <<HTML;
 <html>
   <head>
@@ -38,7 +39,9 @@ print <<HTML;
 	disp_str+="<input type='submit' value='Add' onclick='addtbl()'>&nbsp;&nbsp;";
 	disp_str+="<input type='button' value='Cancel' onclick='origtbl()'>";
 	disp_td.innerHTML=disp_str;
-    }
+	
+	
+      }
       function addtbl()
       {
 	var current = new Date();
@@ -46,21 +49,26 @@ print <<HTML;
 	var mon	= (current.getMonth() >= 12) ? mon=1 : ((current.getMonth() < 10) ? mon='0'+(current.getMonth()+1) : mon=(current.getMonth()+1));
 	var curr_dt = ""+current.getFullYear()+"-"+mon+"-"+current.getDate()+" "+current.getHours()+":"+current.getMinutes();
 	if( curr_dt < man_date )
-	{
-	  var url="http://localhost/cgi-bin/appontment.cgi?add_dt="+frm.add_dt+"&add_tm="+frm.add_tm+"&add_txt="+frm.add_txt;
-	  document.frm.action=url;
-	  document.frm.submit();
-	}
+	{	 
+	     alert('submiting');
+		 var url = 'C\:\\apache\\cgi-bin\\datastore.pl';
+                       document.frm.action=url;
+                        document.frm.submit();  
+             		
+	  	}
 	else
 	{
 		alert('The Manual and Current both are identical (OR) the Manual date is past');
 	}
       }
-      function datatbl()
+     function getAppointments()
       {
-	var url="http://localhost/cgi-bin/appontment.cgi?sear="+frm.sear+"&type=search";
-	document.frm.action=url;
-	document.frm.submit();
+	  //var url="http://localhost/cgi-bin/Archana.pl?seannr="+frm.sear+"&type=search";
+	//document.frm.action=url;
+	//document.frm.submit();
+	//var searnnnn=frm.sear.value;
+	//alert('searnnnn');
+	
       }
     </script>
   </head>
@@ -70,24 +78,33 @@ print <<HTML;
       <table border=1 align="center">
 	<tr><td align="center"><b>Appointments</b></td></tr>
 	<tr><td id ="disp"></td></tr>
-	<tr><td><input type="text">
-		<input type="submit" name="sear" value="Search" onclick="datatbl()"></td>
+	<tr><td><input name="search" type="text">
+		<input type="submit" name="type" value="Search" onclick=" getAppointments()"></td>
 	</tr>
-	<tr>
-	    <td>
-		<table>
+	
+	</td>
+	</tr>
+      </table>
+	  
+	 <br>
+	 <br>
+	  <table border=2 align="center">
+		
 HTML
-	my $sth;
-	if($sear ne "" && $type eq "type")
+   my $sth;
+
+	if($sear ne "" && $type eq "Search")
 	{
-	  $sth=$dbh->prepare("select * from myDB where description ilike '%$sear%'");
+	
+	  $sth=$dbh->prepare("select * from apointments where description like '%$sear%'");
 print <<HTML;
+\n
 	  <tr><th>Date</th><th>Time</th><th>Description</th></tr>
 HTML
 	}
-	elsif($type eq "type")
+	elsif($type eq "Search")
 	{
-	  $sth=$dbh->prepare("select * from myDB order by add_dt");
+	  $sth=$dbh->prepare("select * from apointments order by date");
 print <<HTML;
 	  <tr><th>Date</th><th>Time</th><th>Description</th></tr>
 HTML
@@ -100,12 +117,23 @@ print <<HTML;
 HTML
 	}
         $sth->finish();
-	$dbh->disconnect();
+	#$dbh->disconnect();
+
 print <<HTML;
 		</table>
-	    </td>
-	</tr>
-      </table>
+	    
+HTML
+
+sub inserting()
+{
+print <<HTML;
+<table> <tr><td> hello</td></tr></table>
+HTML
+}
+print <<HTML;
+
+
+	  
     </form>
   </body>
 </html>
